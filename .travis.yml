@@ -2,10 +2,5 @@ language: go
 go:
 - 1.3
 - tip
-install:
-- go get github.com/golang/lint
-- go get golang.org/x/tools/cmd/vet
 script:
 - go test -race -cpu=2 -v
-- $GOPATH/bin/golint
-- go tool vet -v .

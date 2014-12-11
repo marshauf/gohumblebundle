@@ -27,12 +27,29 @@ const (
 type Response struct {
 	NumResults int      `json:"num_results"`
 	RequestID  int      `json:"request"`
-	Results    []Result `json:"results"`
+	Results    []*Product `json:"results"`
 }
 
-type Result struct {
+func (p0 *Product) Eq(p1 *Product) bool {
+	if p0.MachineName != p1.MachineName {
+		return false
+	}
+	for key,value := range p0.IconDict {
+		v, ok := p1.IconDict[key]
+		if !ok {
+			return false
+		}
+		if value.Eq(v) == false {
+			return false
+		}
+	}
+	// TODO AlertMessages and the rest
+	return true
+}
+
+type Product struct {
 	MachineName                  string              `json:"machine_name"`
-	IconDict                     map[string]Icon     `json:"icon_dict"`
+	IconDict                     map[string]*Icon     `json:"icon_dict"`
 	AlertMessages                []map[string]string `json:"alert_messages"`
 	StoreFrontFeaturedImageSmall string              `json:"storefront_featured_image_small"`
 	YoutubeLink                  string              `json:"youtube_link"`
@@ -42,7 +59,7 @@ type Result struct {
 	ForcePopup                   bool                `json:"force_popup"`
 	RatingDetails                interface{}         `json:"rating_details"` // TODO Lookup
 	EsrbRating                   string              `json:"esrb_rating"`
-	Developers                   []Developer         `json:"developers"`
+	Developers                   []*Developer         `json:"developers"`
 	Publishers                   interface{}         `json:"publishers"` // TODO Lookup
 	DeliveryMethods              []string            `json:"delivery_methods"`
 	StoreFrontIcon               string              `json:"storefront_icon"`
@@ -55,12 +72,32 @@ type Result struct {
 	ContentTypes                 []string            `json:"content_types"`
 	StoreFrontPreviewImage       interface{}         `json:"storefront_preview_image"` // TODO Lookup
 	HumanName                    string              `json:"human_name"`
-	CurrentPrice                 Currency            `json:"current_price"` // value float, currency string
+	CurrentPrice                 *Currency            `json:"current_price"` // value float, currency string
 }
 
 type Icon struct {
 	Available   []string `json:"available"`
 	Unavailable []string `json:"unavailable"`
+}
+
+func (i0 *Icon) Eq(i1 *Icon) bool {
+	if len(i0.Available) != len(i1.Available) {
+		return false
+	}
+	if len(i0.Unavailable) != len(i1.Unavailable) {
+		return false
+	}
+	for i := range i0.Available{
+		if i0.Available[i] != i1.Available[i] {
+			return false
+		}
+	}
+	for i := range i0.Unavailable{
+		if i0.Unavailable[i] != i1.Unavailable[i] {
+			return false
+		}
+	}
+	return true
 }
 
 type Developer struct {
@@ -78,7 +115,7 @@ func (c Currency) Name() string {
 	return c[0].(string)
 }
 
-func Request(requestID, pageSize, page int, sort, platform, drm string) (*Response, error) {
+func Request(requestID, pageSize, page int, sort, platform, drm, search string) (*Response, error) {
 	/*
 		https://www.humblebundle.com/store/api/humblebundle?request=1&page_size=20&sort=bestselling&page=0
 		https://www.humblebundle.com/store/api/humblebundle?request=1&page_size=5&sort=bestselling&page=0
@@ -104,6 +141,9 @@ func Request(requestID, pageSize, page int, sort, platform, drm string) (*Respon
 	}
 	if len(drm) > 0 {
 		url += "&drm=" + drm
+	}
+	if len(search) > 0 {
+		url += "&search=" + search
 	}
 	resp, err := http.Get(url)
 	if err != nil {

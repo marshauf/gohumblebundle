@@ -11,6 +11,7 @@ var tests = []struct {
 	Sort      string
 	Platform  string
 	Drm       string
+	Search    string
 }{
 	{
 		RequestID: 0,
@@ -101,7 +102,7 @@ func TestRequest(t *testing.T) {
 		err  error
 	)
 	for _, req := range tests {
-		resp, err = Request(req.RequestID, req.PageSize, req.Page, req.Sort, req.Platform, req.Drm)
+		resp, err = Request(req.RequestID, req.PageSize, req.Page, req.Sort, req.Platform, req.Drm, req.Search)
 		if err != nil {
 			t.Errorf("Request(%v): %s", req, err)
 		}

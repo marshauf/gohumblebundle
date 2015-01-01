@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
 
 const (
@@ -25,8 +27,8 @@ const (
 )
 
 type Response struct {
-	NumResults int      `json:"num_results"`
-	RequestID  int      `json:"request"`
+	NumResults int        `json:"num_results"`
+	RequestID  int        `json:"request"`
 	Results    []*Product `json:"results"`
 }
 
@@ -34,7 +36,7 @@ func (p0 *Product) Eq(p1 *Product) bool {
 	if p0.MachineName != p1.MachineName {
 		return false
 	}
-	for key,value := range p0.IconDict {
+	for key, value := range p0.IconDict {
 		v, ok := p1.IconDict[key]
 		if !ok {
 			return false
@@ -47,9 +49,24 @@ func (p0 *Product) Eq(p1 *Product) bool {
 	return true
 }
 
+type Time time.Time
+
+func (t *Time) UnmarshalJSON(data []byte) (err error) {
+	str := string(data)
+	if strings.HasSuffix(str, ".0") {
+		str = str[:len(data)-2]
+	}
+	n, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return err
+	}
+	*t = Time(time.Unix(n, 0))
+	return nil
+}
+
 type Product struct {
 	MachineName                  string              `json:"machine_name"`
-	IconDict                     map[string]*Icon     `json:"icon_dict"`
+	IconDict                     map[string]*Icon    `json:"icon_dict"`
 	AlertMessages                []map[string]string `json:"alert_messages"`
 	StoreFrontFeaturedImageSmall string              `json:"storefront_featured_image_small"`
 	YoutubeLink                  string              `json:"youtube_link"`
@@ -59,7 +76,7 @@ type Product struct {
 	ForcePopup                   bool                `json:"force_popup"`
 	RatingDetails                interface{}         `json:"rating_details"` // TODO Lookup
 	EsrbRating                   string              `json:"esrb_rating"`
-	Developers                   []*Developer         `json:"developers"`
+	Developers                   []*Developer        `json:"developers"`
 	Publishers                   interface{}         `json:"publishers"` // TODO Lookup
 	DeliveryMethods              []string            `json:"delivery_methods"`
 	StoreFrontIcon               string              `json:"storefront_icon"`
@@ -72,7 +89,10 @@ type Product struct {
 	ContentTypes                 []string            `json:"content_types"`
 	StoreFrontPreviewImage       interface{}         `json:"storefront_preview_image"` // TODO Lookup
 	HumanName                    string              `json:"human_name"`
-	CurrentPrice                 *Currency            `json:"current_price"` // value float, currency string
+	CurrentPrice                 *Currency           `json:"current_price"` // value float, currency string
+	SaleEnd                      Time                `json:"sale_end,number"`
+	SaleType                     string              `json:"sale_type"`
+	FullPrice                    *Currency           `json:"full_price"` // value float, currency string
 }
 
 type Icon struct {
@@ -87,12 +107,12 @@ func (i0 *Icon) Eq(i1 *Icon) bool {
 	if len(i0.Unavailable) != len(i1.Unavailable) {
 		return false
 	}
-	for i := range i0.Available{
+	for i := range i0.Available {
 		if i0.Available[i] != i1.Available[i] {
 			return false
 		}
 	}
-	for i := range i0.Unavailable{
+	for i := range i0.Unavailable {
 		if i0.Unavailable[i] != i1.Unavailable[i] {
 			return false
 		}

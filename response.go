@@ -27,12 +27,12 @@ const (
 )
 
 type Response struct {
-	NumResults int        `json:"num_results"`
-	RequestID  int        `json:"request"`
-	Results    []*Product `json:"results"`
+	NumResults int        `bson:"num_results" json:"num_results"`
+	RequestID  int        `bson:"request" json:"request"`
+	Results    []*Product `bson:"results" json:"results"`
 }
 
-func (p0 *Product) Eq(p1 *Product) bool {
+func (p0 *Product) Equal(p1 *Product) bool {
 	if p0.MachineName != p1.MachineName {
 		return false
 	}
@@ -41,15 +41,54 @@ func (p0 *Product) Eq(p1 *Product) bool {
 		if !ok {
 			return false
 		}
-		if value.Eq(v) == false {
+		if value.Equal(v) == false {
 			return false
 		}
 	}
-	// TODO AlertMessages and the rest
+
+	// TODO AlertMessages to StoreFrontPreviewImage
+
+	if p0.HumanName != p1.HumanName {
+		return false
+	}
+	if p0.CurrentPrice.Equal(p1.CurrentPrice) == false {
+		return false
+	}
+	if p0.SaleEnd != nil {
+		if p1.SaleEnd != nil {
+			if p0.SaleEnd.Equal(p1.SaleEnd) == false {
+				return false
+			}
+		} else {
+			return false
+		}
+	} else if p1.SaleEnd != nil {
+		return false
+	}
+	if p0.SaleType != p1.SaleType {
+		return false
+	}
+	if p0.FullPrice != nil {
+		if p1.FullPrice != nil {
+			if p0.FullPrice.Equal(p1.FullPrice) == false {
+				return false
+			}
+		} else {
+			return false
+		}
+	} else if p1.FullPrice != nil {
+		return false
+	}
 	return true
 }
 
-type Time time.Time
+type Time struct {
+	time.Time
+}
+
+func (t *Time) Equal(u *Time) bool {
+	return t.Time.Equal(u.Time)
+}
 
 func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	str := string(data)
@@ -60,47 +99,47 @@ func (t *Time) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	*t = Time(time.Unix(n, 0))
+	t.Time = time.Unix(n, 0)
 	return nil
 }
 
 type Product struct {
-	MachineName                  string              `json:"machine_name"`
-	IconDict                     map[string]*Icon    `json:"icon_dict"`
-	AlertMessages                []map[string]string `json:"alert_messages"`
-	StoreFrontFeaturedImageSmall string              `json:"storefront_featured_image_small"`
-	YoutubeLink                  string              `json:"youtube_link"`
-	Platforms                    []string            `json:"platforms"`
-	PromotionalMessage           interface{}         `json:"promotional_message"` // TODO Lookup
-	UskRating                    string              `json:"usk_rating"`
-	ForcePopup                   bool                `json:"force_popup"`
-	RatingDetails                interface{}         `json:"rating_details"` // TODO Lookup
-	EsrbRating                   string              `json:"esrb_rating"`
-	Developers                   []*Developer        `json:"developers"`
-	Publishers                   interface{}         `json:"publishers"` // TODO Lookup
-	DeliveryMethods              []string            `json:"delivery_methods"`
-	StoreFrontIcon               string              `json:"storefront_icon"`
-	Description                  string              `json:"description"`
-	AllowedTerritories           interface{}         `json:"allowed_territories"` // TODO Lookup
-	MinimumAge                   interface{}         `json:"minimum_age"`         // TODO Lookup
-	SystemRequirements           string              `json:"system_requirements"`
-	PegiRating                   string              `json:"pegi_rating"`
-	StoreFrontFeaturedImageLarge string              `json:"storefront_featured_image_large"`
-	ContentTypes                 []string            `json:"content_types"`
-	StoreFrontPreviewImage       interface{}         `json:"storefront_preview_image"` // TODO Lookup
-	HumanName                    string              `json:"human_name"`
-	CurrentPrice                 *Currency           `json:"current_price"` // value float, currency string
-	SaleEnd                      Time                `json:"sale_end,number"`
-	SaleType                     string              `json:"sale_type"`
-	FullPrice                    *Currency           `json:"full_price"` // value float, currency string
+	MachineName                  string              `bson:"machine_name" json:"machine_name"`
+	IconDict                     map[string]*Icon    `bson:"icon_dict" json:"icon_dict"`
+	AlertMessages                []map[string]string `bson:"alert_messages" json:"alert_messages"`
+	StoreFrontFeaturedImageSmall string              `bson:"storefront_featured_image_small" json:"storefront_featured_image_small"`
+	YoutubeLink                  string              `bson:"youtube_link" json:"youtube_link"`
+	Platforms                    []string            `bson:"platforms" json:"platforms"`
+	PromotionalMessage           interface{}         `bson:"promotional_message" json:"promotional_message"` // TODO Lookup
+	UskRating                    string              `bson:"usk_rating" json:"usk_rating"`
+	ForcePopup                   bool                `bson:"force_popup" json:"force_popup"`
+	RatingDetails                interface{}         `bson:"rating_details" json:"rating_details"` // TODO Lookup
+	EsrbRating                   string              `bson:"esrb_rating" json:"esrb_rating"`
+	Developers                   []*Developer        `bson:"developers" json:"developers"`
+	Publishers                   interface{}         `bson:"publishers" json:"publishers"` // TODO Lookup
+	DeliveryMethods              []string            `bson:"delivery_methods" json:"delivery_methods"`
+	StoreFrontIcon               string              `bson:"storefront_icon" json:"storefront_icon"`
+	Description                  string              `bson:"description" json:"description"`
+	AllowedTerritories           interface{}         `bson:"allowed_territories" json:"allowed_territories"` // TODO Lookup
+	MinimumAge                   interface{}         `bson:"minimum_age" json:"minimum_age"`                 // TODO Lookup
+	SystemRequirements           string              `bson:"system_requirements" json:"system_requirements"`
+	PegiRating                   string              `bson:"pegi_rating" json:"pegi_rating"`
+	StoreFrontFeaturedImageLarge string              `bson:"storefront_featured_image_large" json:"storefront_featured_image_large"`
+	ContentTypes                 []string            `bson:"content_types" json:"content_types"`
+	StoreFrontPreviewImage       interface{}         `bson:"storefront_preview_image" json:"storefront_preview_image"` // TODO Lookup
+	HumanName                    string              `bson:"human_name" json:"human_name"`
+	CurrentPrice                 Prices              `bson:"current_price" json:"current_price"` // value float currency string
+	SaleEnd                      *Time               `bson:"sale_end" json:"sale_end,number"`
+	SaleType                     string              `bson:"sale_type" json:"sale_type"`
+	FullPrice                    Prices              `bson:"full_price" json:"full_price"` // value float currency string
 }
 
 type Icon struct {
-	Available   []string `json:"available"`
-	Unavailable []string `json:"unavailable"`
+	Available   []string `bson:"available" json:"available"`
+	Unavailable []string `bson:"unavailable" json:"unavailable"`
 }
 
-func (i0 *Icon) Eq(i1 *Icon) bool {
+func (i0 *Icon) Equal(i1 *Icon) bool {
 	if len(i0.Available) != len(i1.Available) {
 		return false
 	}
@@ -121,18 +160,59 @@ func (i0 *Icon) Eq(i1 *Icon) bool {
 }
 
 type Developer struct {
-	Name string `json:"developer-name"`
-	URL  string `json:"developer-url"`
+	Name string `bson:"developer_name" json:"developer-name"`
+	URL  string `bson:"developer_url" json:"developer-url"`
 }
 
-type Currency []interface{}
+type Prices []Price
 
-func (c Currency) Value() float64 {
-	return c[1].(float64)
+func (p0 Prices) Equal(p1 Prices) bool {
+	var found bool
+	for i := range p0 {
+		found = false
+		for j := range p1 {
+			if p0[i].Equal(p1[j]) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
-func (c Currency) Name() string {
-	return c[0].(string)
+func (p *Prices) UnmarshalJSON(data []byte) error {
+	list := make([]interface{}, 0)
+	if err := json.Unmarshal(data, &list); err != nil {
+		return err
+	}
+	*p = make([]Price, len(list)/2)
+	for i := 0; i < len(list)/2; i++ {
+		switch v := list[i*2].(type) {
+		case float64:
+			(*p)[i].Value = v
+		case string:
+			(*p)[i].Currency = v
+		}
+		switch v := list[i*2+1].(type) {
+		case float64:
+			(*p)[i].Value = v
+		case string:
+			(*p)[i].Currency = v
+		}
+	}
+	return nil
+}
+
+type Price struct {
+	Currency string  `bson:"currency"`
+	Value    float64 `bson:"value"`
+}
+
+func (p0 Price) Equal(p1 Price) bool {
+	return p0.Currency == p1.Currency && p0.Value == p1.Value
 }
 
 func Request(requestID, pageSize, page int, sort, platform, drm, search string) (*Response, error) {

@@ -117,3 +117,32 @@ func TestRequest(t *testing.T) {
 		}
 	}
 }
+
+func TestRequestAll(t *testing.T) {
+	var (
+		pageSize = 20 // The maximum of 07.12.2014
+		pages    = 26 // as of 09.12.2014
+		sort     = SortAlphabetical
+		platform = PlatformAll
+		drm      = DrmAll
+		search   string
+		err      error
+		resp     *Response
+	)
+	resp, err = Request(0, pageSize, 0, sort, platform, drm, search)
+	if err != nil {
+		t.Errorf("Request(%d): %s", 0, err)
+	}
+
+	pages = resp.NumResults / pageSize
+
+	for i := 1; i <= pages; i++ {
+		resp, err = Request(i, pageSize, i, sort, platform, drm, search)
+		if err != nil {
+			t.Errorf("Request(%d): %s", i, err)
+		}
+		if resp.RequestID != i {
+			t.Errorf("RequestID %d different to ResponseID %d", i, resp.RequestID)
+		}
+	}
+}

@@ -32,6 +32,7 @@ type Response struct {
 	Results    []*Product `bson:"results" json:"results"`
 }
 
+// TODO Check against nil
 func (p0 *Product) Equal(p1 *Product) bool {
 	if p0.MachineName != p1.MachineName {
 		return false
@@ -45,9 +46,128 @@ func (p0 *Product) Equal(p1 *Product) bool {
 			return false
 		}
 	}
-
-	// TODO AlertMessages to StoreFrontPreviewImage
-
+	for i := range p0.AlertMessages {
+		for k, v0 := range p0.AlertMessages[i] {
+			found := false
+			for j := range p1.AlertMessages {
+				if v1, exists := p1.AlertMessages[j][k]; exists {
+					found = true
+					if v0 != v1 {
+						return false
+					}
+					break
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+	if p0.StoreFrontFeaturedImageSmall != p1.StoreFrontFeaturedImageSmall {
+		return false
+	}
+	if p0.YoutubeLink != p1.YoutubeLink {
+		return false
+	}
+	for _, v0 := range p0.Platforms {
+		found := false
+		for _, v1 := range p0.Platforms {
+			if v0 == v1 {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	if p0.PromotionalMessage != p1.PromotionalMessage {
+		return false
+	}
+	if p0.UskRating != p1.UskRating {
+		return false
+	}
+	if p0.ForcePopup != p1.ForcePopup {
+		return false
+	}
+	if p0.RatingDetails != p1.RatingDetails {
+		return false
+	}
+	if p0.EsrbRating != p1.EsrbRating {
+		return false
+	}
+	for _, v0 := range p0.Developers {
+		found := false
+		for _, v1 := range p1.Developers {
+			if v0.Equal(v1) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	for _, v0 := range p0.Publishers {
+		found := false
+		for _, v1 := range p1.Publishers {
+			if v0.Equal(v1) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	for _, v0 := range p0.DeliveryMethods {
+		found := false
+		for _, v1 := range p1.DeliveryMethods {
+			if v0 == v1 {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	if p0.StoreFrontIcon != p1.StoreFrontIcon {
+		return false
+	}
+	if p0.Description != p1.Description {
+		return false
+	}
+	for _, v0 := range p0.AllowedTerritories {
+		found := false
+		for _, v1 := range p1.AllowedTerritories {
+			if v0 == v1 {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	if p0.MinimumAge != p1.MinimumAge {
+		return false
+	}
+	if p0.SystemRequirements != p1.SystemRequirements {
+		return false
+	}
+	if p0.PegiRating != p1.PegiRating {
+		return false
+	}
+	if p0.StoreFrontFeaturedImageLarge != p1.StoreFrontFeaturedImageLarge {
+		return false
+	}
+	for _, v0 := range p0.ContentTypes {
+		found := false
+		for _, v1 := range p1.ContentTypes {
+			if v0 == v1 {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
 	if p0.HumanName != p1.HumanName {
 		return false
 	}
@@ -164,6 +284,10 @@ type Developer struct {
 	URL  string `bson:"developer_url" json:"developer-url"`
 }
 
+func (d0 *Developer) Equal(d1 *Developer) bool {
+	return d0.Name == d1.Name && d0.URL == d1.URL
+}
+
 type Prices []Price
 
 func (p0 Prices) Equal(p1 Prices) bool {
@@ -218,6 +342,10 @@ func (p0 Price) Equal(p1 Price) bool {
 type Publisher struct {
 	Name string `bson:"publisher_name" json:"publisher-name"`
 	URL  string `bson:"publisher_url" json:"publisher-url"`
+}
+
+func (p0 *Publisher) Equal(p1 Publisher) bool {
+	return p0.Name == p1.Name && p0.URL == p1.URL
 }
 
 func Request(requestID, pageSize, page int, sort, platform, drm, search string) (*Response, error) {

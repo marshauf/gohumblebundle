@@ -110,23 +110,23 @@ type Product struct {
 	StoreFrontFeaturedImageSmall string              `bson:"storefront_featured_image_small" json:"storefront_featured_image_small"`
 	YoutubeLink                  string              `bson:"youtube_link" json:"youtube_link"`
 	Platforms                    []string            `bson:"platforms" json:"platforms"`
-	PromotionalMessage           interface{}         `bson:"promotional_message" json:"promotional_message"` // TODO Lookup
+	PromotionalMessage           string              `bson:"promotional_message" json:"promotional_message"`
 	UskRating                    string              `bson:"usk_rating" json:"usk_rating"`
 	ForcePopup                   bool                `bson:"force_popup" json:"force_popup"`
-	RatingDetails                interface{}         `bson:"rating_details" json:"rating_details"` // TODO Lookup
+	RatingDetails                string              `bson:"rating_details" json:"rating_details"`
 	EsrbRating                   string              `bson:"esrb_rating" json:"esrb_rating"`
 	Developers                   []*Developer        `bson:"developers" json:"developers"`
-	Publishers                   interface{}         `bson:"publishers" json:"publishers"` // TODO Lookup
+	Publishers                   []Publisher         `bson:"publishers" json:"publishers"`
 	DeliveryMethods              []string            `bson:"delivery_methods" json:"delivery_methods"`
 	StoreFrontIcon               string              `bson:"storefront_icon" json:"storefront_icon"`
 	Description                  string              `bson:"description" json:"description"`
-	AllowedTerritories           interface{}         `bson:"allowed_territories" json:"allowed_territories"` // TODO Lookup
-	MinimumAge                   interface{}         `bson:"minimum_age" json:"minimum_age"`                 // TODO Lookup
+	AllowedTerritories           []string            `bson:"allowed_territories" json:"allowed_territories"`
+	MinimumAge                   int                 `bson:"minimum_age" json:"minimum_age"`
 	SystemRequirements           string              `bson:"system_requirements" json:"system_requirements"`
 	PegiRating                   string              `bson:"pegi_rating" json:"pegi_rating"`
 	StoreFrontFeaturedImageLarge string              `bson:"storefront_featured_image_large" json:"storefront_featured_image_large"`
 	ContentTypes                 []string            `bson:"content_types" json:"content_types"`
-	StoreFrontPreviewImage       interface{}         `bson:"storefront_preview_image" json:"storefront_preview_image"` // TODO Lookup
+	StoreFrontPreviewImage       string              `bson:"storefront_preview_image" json:"storefront_preview_image"`
 	HumanName                    string              `bson:"human_name" json:"human_name"`
 	CurrentPrice                 Prices              `bson:"current_price" json:"current_price"` // value float currency string
 	SaleEnd                      *Time               `bson:"sale_end" json:"sale_end,number"`
@@ -213,6 +213,11 @@ type Price struct {
 
 func (p0 Price) Equal(p1 Price) bool {
 	return p0.Currency == p1.Currency && p0.Value == p1.Value
+}
+
+type Publisher struct {
+	Name string `bson:"publisher_name" json:"publisher-name"`
+	URL  string `bson:"publisher_url" json:"publisher-url"`
 }
 
 func Request(requestID, pageSize, page int, sort, platform, drm, search string) (*Response, error) {
